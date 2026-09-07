@@ -1,7 +1,7 @@
 # Overview
 
 FileSurfer is a cross-platform file manager built with Avalonia UI and ReactiveUI,
-targeting Windows and Linux on .NET 8.0. This page gives a high-level orientation
+targeting Windows and Linux on .NET 10.0. This page gives a high-level orientation
 to the codebase. For member-level detail, browse the generated class list and
 namespace index; this page focuses on how the pieces fit together.
 

@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Guidance for working in this repo. FileSurfer is a cross-platform (Windows + Linux)
-desktop file manager built with **Avalonia UI 11** + **ReactiveUI** on **.NET 8.0**,
+desktop file manager built with **Avalonia UI 11** + **ReactiveUI** on **.NET 10**,
 using the MVVM pattern.
 
 ## Commands
@@ -19,12 +19,12 @@ dotnet run --project src/FileSurfer.Linux
 # Test — whole suite, or one project
 dotnet test src/FileSurfer.sln
 dotnet test src/tests/Tests.Core
-dotnet test src/tests/Tests.Windows        # net8.0-windows, Windows only
+dotnet test src/tests/Tests.Windows        # net10.0-windows, Windows only
 dotnet test src/tests/Tests.Linux
 
 # Release build of the Windows executable
 dotnet publish src/FileSurfer.Windows/FileSurfer.Windows.csproj -c Release
-# -> src/FileSurfer.Windows/bin/Release/net8.0-windows/publish/FileSurfer.exe
+# -> src/FileSurfer.Windows/bin/Release/net10.0-windows/publish/FileSurfer.exe
 ```
 
 Plain `dotnet` is enough on both platforms — no VS Build Tools / `msbuild.exe` needed
@@ -41,7 +41,7 @@ resolution respectively.
 | Project              | Role |
 |----------------------|------|
 | `FileSurfer.Core`    | Almost everything: Models, Services, ViewModels, Views (AXAML). No reference to the platform projects. |
-| `FileSurfer.Windows` | Thin. `Main` entry point + Windows implementations of platform interfaces. Produces `FileSurfer.exe`. `net8.0-windows`, WinForms enabled. |
+| `FileSurfer.Windows` | Thin. `Main` entry point + Windows implementations of platform interfaces. Produces `FileSurfer.exe`. `net10.0-windows`, WinForms enabled. |
 | `FileSurfer.Linux`   | Thin. `Main` entry point + Linux implementations. Produces `FileSurfer`. |
 | `tests/Mocks`        | Shared mock implementations of the service interfaces, used by the test projects. |
 | `tests/Tests.Core` / `Tests.Linux` / `Tests.Windows` | xUnit tests. |
