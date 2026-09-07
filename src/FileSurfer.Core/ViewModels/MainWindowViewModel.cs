@@ -179,7 +179,7 @@ public sealed partial class MainWindowViewModel : ReactiveObject, IDisposable
     private string _currentFsLabel = string.Empty;
 
     /// <summary>
-    /// Holds the text currently displayed in the PathBox.
+    /// Holds the text currently displayed in the PathBox (also reused for the "Searching…" animation).
     /// </summary>
     public string PathBoxText
     {
@@ -187,6 +187,16 @@ public sealed partial class MainWindowViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref _pathBoxText, value);
     }
     private string _pathBoxText = string.Empty;
+
+    /// <summary>
+    /// Holds the breadcrumb segments of the current location, from root to leaf.
+    /// </summary>
+    public ObservableCollection<PathSegment> PathSegments { get; } = new();
+
+    /// <summary>
+    /// Gets the current location's path, used to pre-fill the editable path box.
+    /// </summary>
+    public string CurrentPath => _currentLocation?.Path ?? string.Empty;
 
     private Location CurrentLocation
     {
@@ -198,6 +208,8 @@ public sealed partial class MainWindowViewModel : ReactiveObject, IDisposable
             _currentLocation = value;
             PathBoxText = value.Path;
             CurrentFsLabel = value.FileSystem.GetLabel();
+            RebuildPathSegments(value);
+            this.RaisePropertyChanged(nameof(CurrentPath));
             if (FileSurferSettings.OpenInLastLocation && value.FileSystem.IsLocal())
                 FileSurferSettings.OpenIn = value.Path;
 
@@ -209,6 +221,13 @@ public sealed partial class MainWindowViewModel : ReactiveObject, IDisposable
         }
     }
     private Location? _currentLocation;
+
+    private void RebuildPathSegments(Location location)
+    {
+        PathSegments.Clear();
+        foreach (PathSegment segment in location.PathTools().ToPathSegments(location.Path))
+            PathSegments.Add(segment);
+    }
 
     /// <summary>
     /// Gets or sets the status/info message displayed in the main window.

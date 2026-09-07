@@ -263,11 +263,23 @@
 
                 <TextBlock Grid.Column="1" Classes="ColonSeparator" Text=":" />
 
-                <TextBox x:Name="PathBox"
-                         Grid.Column="2"
-                         Classes="PathBox TopTextBox"
-                         LostFocus="PathBoxLostFocus"
-                         Text="{Binding PathBoxText, Mode=OneWay}" />
+                <Panel Grid.Column="2" Margin="0 0 10 0">
+                    <helpers:BreadcrumbBar x:Name="PathBar"
+                                           EditRequested="PathBarEditRequested"
+                                           SegmentInvoked="PathSegmentInvoked"
+                                           Segments="{Binding PathSegments}" />
+
+                    <TextBox x:Name="PathBox"
+                             Classes="BreadcrumbEdit TopTextBox"
+                             IsVisible="False"
+                             LostFocus="PathBoxLostFocus"
+                             Text="{Binding PathBoxText, Mode=OneWay}" />
+
+                    <TextBlock x:Name="SearchingText"
+                               Classes="BreadcrumbBusy"
+                               IsVisible="False"
+                               Text="{Binding PathBoxText}" />
+                </Panel>
 
                 <Grid Grid.Column="3">
                     <TextBox x:Name="SearchBox" Classes="SearchBox TopTextBox" Watermark="{Binding SearchWaterMark}" />
