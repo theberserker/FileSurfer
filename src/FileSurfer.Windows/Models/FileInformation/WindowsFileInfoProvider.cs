@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using FileSurfer.Core;
 using FileSurfer.Core.Models;
 using FileSurfer.Core.Models.FileInformation;
@@ -102,16 +103,27 @@ public class WindowsFileInfoProvider : LocalFileInfoProvider
 
         try
         {
-            IWshRuntimeLibrary.WshShell shell = new();
-            IWshRuntimeLibrary.IWshShortcut shortcut = (IWshRuntimeLibrary.IWshShortcut)
-                shell.CreateShortcut(linkPath);
+            Type? wshType = Type.GetTypeFromProgID("WScript.Shell");
+            if (wshType is null)
+                return false;
 
-            if (Directory.Exists(shortcut.TargetPath))
+            dynamic shell = Activator.CreateInstance(wshType)!;
+            try
             {
-                directory = shortcut.TargetPath;
-                return true;
+                dynamic shortcut = shell.CreateShortcut(linkPath);
+                string? targetPath = shortcut.TargetPath as string;
+
+                if (targetPath is not null && Directory.Exists(targetPath))
+                {
+                    directory = targetPath;
+                    return true;
+                }
+                return false;
             }
-            return false;
+            finally
+            {
+                Marshal.FinalReleaseComObject(shell);
+            }
         }
         catch
         {

@@ -3,13 +3,11 @@ using System.Runtime.InteropServices;
 using FileSurfer.Core.Models;
 using FileSurfer.Core.Services.Shell;
 using Microsoft.VisualBasic.FileIO;
-using FolderItem = Shell32.FolderItem;
-using FolderItemVerb = Shell32.FolderItemVerb;
 
 namespace FileSurfer.Windows.Services.Shell;
 
 /// <summary>
-/// Interacts with the Windows <see cref="Shell"/> and <see cref="System.Runtime.InteropServices"/>
+/// Interacts with the Windows shell (<c>Shell.Application</c>) via late-bound COM
 /// in order to restore files and directories from the system trash.
 /// </summary>
 public class WindowsBinInteraction : IBinInteraction
@@ -28,12 +26,16 @@ public class WindowsBinInteraction : IBinInteraction
 
     private static SimpleResult RestoreInternal(string originalPath)
     {
-        Shell32.Shell shell = new();
-        Shell32.Folder bin = shell.NameSpace(BinFolderId);
+        Type? shellType = Type.GetTypeFromProgID("Shell.Application");
+        if (shellType is null)
+            return SimpleResult.Error("The Windows shell (Shell.Application) is not available.");
+
+        dynamic shell = Activator.CreateInstance(shellType)!;
+        dynamic bin = shell.NameSpace(BinFolderId);
         SimpleResult result = SimpleResult.Error($"Entry: \"{originalPath}\" not found.");
         try
         {
-            foreach (FolderItem item in bin.Items())
+            foreach (dynamic item in bin.Items())
             {
                 if (
                     TryGetOriginalPath(item, out string? itemOriginalPath)
@@ -56,18 +58,18 @@ public class WindowsBinInteraction : IBinInteraction
         return result;
     }
 
-    private static bool TryGetOriginalPath(FolderItem item, out string? originalPath)
+    private static bool TryGetOriginalPath(dynamic item, out string? originalPath)
     {
         originalPath = null;
         try
         {
-            dynamic comItem = item;
-            string? deletedFrom = comItem.ExtendedProperty(DeletedFromProperty) as string;
-            if (string.IsNullOrWhiteSpace(deletedFrom) || string.IsNullOrWhiteSpace(item.Name))
+            string? deletedFrom = item.ExtendedProperty(DeletedFromProperty) as string;
+            string? name = item.Name as string;
+            if (string.IsNullOrWhiteSpace(deletedFrom) || string.IsNullOrWhiteSpace(name))
                 return false;
 
             originalPath = LocalPathTools.NormalizePath(
-                LocalPathTools.Combine(deletedFrom, item.Name)
+                LocalPathTools.Combine(deletedFrom, name)
             );
             return true;
         }
@@ -77,14 +79,20 @@ public class WindowsBinInteraction : IBinInteraction
         }
     }
 
-    private static void DoVerb(FolderItem item, string verb)
+    private static void DoVerb(dynamic item, string verb)
     {
-        foreach (FolderItemVerb verbObject in item.Verbs())
-            if (verbObject.Name.Contains(verb, StringComparison.CurrentCultureIgnoreCase))
+        foreach (dynamic verbObject in item.Verbs())
+        {
+            string? verbName = verbObject.Name as string;
+            if (
+                verbName is not null
+                && verbName.Contains(verb, StringComparison.CurrentCultureIgnoreCase)
+            )
             {
                 verbObject.DoIt();
                 return;
             }
+        }
     }
 
     public IResult MoveFileToTrash(string filePath)
