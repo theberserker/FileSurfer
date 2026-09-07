@@ -34,12 +34,23 @@ public class WindowsShellHandler : ILocalShellHandler
                 ?? throw new ArgumentNullException(path);
             string linkPath = Path.Combine(parentDir, linkName);
 
-            IWshRuntimeLibrary.WshShell wshShell = new();
-            IWshRuntimeLibrary.IWshShortcut shortcut = wshShell.CreateShortcut(linkPath);
+            Type? wshType = Type.GetTypeFromProgID("WScript.Shell");
+            if (wshType is null)
+                return SimpleResult.Error("Windows Script Host (WScript.Shell) is not available.");
 
-            shortcut.TargetPath = path;
-            shortcut.WorkingDirectory = Path.GetDirectoryName(path);
-            shortcut.Save();
+            dynamic wshShell = Activator.CreateInstance(wshType)!;
+            try
+            {
+                dynamic shortcut = wshShell.CreateShortcut(linkPath);
+                shortcut.TargetPath = path;
+                shortcut.WorkingDirectory = Path.GetDirectoryName(path);
+                shortcut.Save();
+                Marshal.FinalReleaseComObject(shortcut);
+            }
+            finally
+            {
+                Marshal.FinalReleaseComObject(wshShell);
+            }
             return SimpleResult.Ok();
         }
         catch (Exception ex)

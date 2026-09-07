@@ -62,14 +62,11 @@ To build FileSurfer from source on Windows, you'll need the following:
 - [**Git for Windows**](https://git-scm.com/install/windows): (optional, for Git integration)  
 
 #### **Steps**  
-1. Install the [.NET Build Tools](https://visualstudio.microsoft.com/cs/visual-cpp-build-tools/).  
-2. Open the *"Developer Command Prompt for VS 2022"* app on your computer.  
-3. Run the following commands:  
+1. Run the following command:  
    ```pwsh  
-   dotnet restore <path to FileSurfer.Windows.csproj>  
-   msbuild <path to FileSurfer.sln> /t:publish /p:Configuration=Release /p:DeployOnBuild=true  
+   dotnet publish <path to FileSurfer.Windows.csproj> -c Release  
    ```  
-2. Locate the compiled executable at: ` "...\src\FileSurfer.Windows\bin\Release\net8.0-windows\FileSurfer.exe" `
+2. Locate the compiled executable at: ` "...\src\FileSurfer.Windows\bin\Release\net8.0-windows\publish\FileSurfer.exe" `
 
 *(You can also use Visual Studio 2022/2026 to build the project.)*  
 
@@ -120,16 +117,19 @@ FileSurfer relies on the following dependencies:
 - Avalonia.Fonts.Inter (v11.3.9)  
 - ReactiveUI.Avalonia (v11.3.8)  
 - LibGit2Sharp (v0.31.0)  
-- SharpCompress (v0.41.0)  
+- SharpCompress (v0.50.0)  
+- SSH.NET (v2026.0.0)  
 
 ### **Windows**
 
 #### .NET and Frameworks
 - Windows Forms
 
-#### COM References
-- Shell32 (GUID: `50a7e9b0-70ef-11d1-b75a-00a0c90564fe`)  
-- IWshRuntimeLibrary (GUID: `f935dc20-1cf0-11d0-adb9-00c04fd58a0b`)  
+#### COM Components
+Accessed at runtime through late-bound COM (`Type.GetTypeFromProgID` / `Activator.CreateInstance`),
+so no build-time COM reference or generated interop assembly is required. These components ship with Windows:
+- Windows Shell — `Shell.Application` (Shell32, GUID `50a7e9b0-70ef-11d1-b75a-00a0c90564fe`)  
+- Windows Script Host — `WScript.Shell` (IWshRuntimeLibrary, GUID `f935dc20-1cf0-11d0-adb9-00c04fd58a0b`)  
 
 ### **Linux**
 
