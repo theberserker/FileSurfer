@@ -25,6 +25,8 @@ public partial class MainWindow : Window
 {
     private MainWindowViewModel? _viewModel;
 
+    private bool _editingPath;
+
     private readonly Dictionary<Button, KeyGesture> _buttonHotKeys = new();
     private readonly List<KeyBinding> _keyBindings = new();
     private readonly KeyBinding? _backupDeleteKeyBinding;
@@ -76,6 +78,43 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel viewModel && _viewModel is null)
             _viewModel = viewModel;
 
+        RefreshPathArea();
+        ClearFocus();
+    }
+
+    /// <summary>
+    /// Coordinates which of the three path-area controls (breadcrumb, editable box, "Searching…")
+    /// is visible, based on the current edit and search state.
+    /// </summary>
+    private void RefreshPathArea()
+    {
+        bool searching = _viewModel?.Searching ?? false;
+        PathBox.IsVisible = _editingPath;
+        SearchingText.IsVisible = searching && !_editingPath;
+        PathBar.IsVisible = !_editingPath && !searching;
+    }
+
+    /// <summary>
+    /// Switches the path area into editable mode with the full current path selected.
+    /// </summary>
+    private void PathBarEditRequested(object? sender, EventArgs e)
+    {
+        if (_viewModel is null || _editingPath)
+            return;
+
+        _editingPath = true;
+        RefreshPathArea();
+        PathBox.Text = _viewModel.CurrentPath;
+        PathBox.Focus();
+        PathBox.SelectAll();
+    }
+
+    /// <summary>
+    /// Navigates to a breadcrumb segment the user clicked.
+    /// </summary>
+    private void PathSegmentInvoked(object? sender, BreadcrumbSegmentEventArgs e)
+    {
+        _viewModel?.SetNewLocationCommand.Execute(e.Segment.FullPath).Subscribe();
         ClearFocus();
     }
 
@@ -100,12 +139,14 @@ public partial class MainWindow : Window
             case nameof(MainWindowViewModel.Searching) when _viewModel.Searching:
                 FileDisplay.ItemTemplate = _searchViewTemplate;
                 FileDisplay.ItemsPanel = _listViewPanel;
+                RefreshPathArea();
                 break;
 
             case nameof(MainWindowViewModel.Searching):
                 FileDisplay.ItemTemplate = _previousTemplate;
                 FileDisplay.ItemsPanel = _previousPanel;
                 SearchBox.Text = string.Empty;
+                RefreshPathArea();
                 break;
 
             case nameof(MainWindowViewModel.IsLocal) when _backupDeleteKeyBinding is not null:
@@ -377,10 +418,17 @@ public partial class MainWindow : Window
         });
 
     /// <summary>
-    /// Resets text in <see cref="PathBox"/>.
+    /// Leaves path-edit mode without navigating when the editable box loses focus.
     /// </summary>
-    private void PathBoxLostFocus(object sender, RoutedEventArgs e) =>
-        PathBox.Text = _viewModel?.PathBoxText ?? string.Empty;
+    private void PathBoxLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (!_editingPath)
+            return;
+
+        _editingPath = false;
+        PathBox.Text = _viewModel?.CurrentPath ?? string.Empty;
+        RefreshPathArea();
+    }
 
     /// <summary>
     /// Executes <see cref="MainWindowViewModel.RenameCommand"/> and hides the new name bar.
@@ -498,6 +546,11 @@ public partial class MainWindow : Window
             case { KeyModifiers: KeyModifiers.Control, Key: Key.F }:
                 OnCtrlFPressed(e);
                 return;
+            case { KeyModifiers: KeyModifiers.Control, Key: Key.L }:
+            case { KeyModifiers: KeyModifiers.Alt, Key: Key.D }:
+                PathBarEditRequested(this, EventArgs.Empty);
+                e.Handled = true;
+                return;
         }
 
         if (
@@ -549,10 +602,12 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (PathBox.IsFocused)
+        if (_editingPath)
         {
-            if (PathBox.Text is string path)
+            if (PathBox.Text is string path && !string.IsNullOrWhiteSpace(path))
                 _viewModel?.SetNewLocationCommand.Execute(path).Subscribe();
+            _editingPath = false;
+            RefreshPathArea();
             ClearFocus();
             return;
         }
@@ -574,6 +629,16 @@ public partial class MainWindow : Window
     private void OnEscapePressed(KeyEventArgs e)
     {
         e.Handled = true;
+
+        if (_editingPath)
+        {
+            _editingPath = false;
+            PathBox.Text = _viewModel?.CurrentPath ?? string.Empty;
+            RefreshPathArea();
+            ClearFocus();
+            return;
+        }
+
         _viewModel?.SelectedFiles.Clear();
         ClearFocus();
     }

@@ -95,6 +95,14 @@ layer — Models = data representation/retrieval, Services = behavior over that 
   `ViewModels/MainWindowViewModel.cs`, command implementations in
   `ViewModels/MWVMCommandImpl.cs`.
 
+- **Path bar**: `Views/Helpers/BreadcrumbBar.cs` is a custom `Panel` (measure/arrange +
+  "…" overflow menu) that renders `MainWindowViewModel.PathSegments`
+  (`Models/PathSegment` list, rebuilt in the `CurrentLocation` setter via
+  `IPathTools.ToPathSegments`). Clicking a segment / the editable box (Ctrl+L, Alt+D,
+  or clicking the empty strip) both route to `SetNewLocationCommand`. The editable
+  `TextBox` and the "Searching…" text are sibling controls; `MainWindow.RefreshPathArea`
+  toggles which of the three is visible.
+
 - **Settings**: `FileSurferSettings` (static) reads/writes
   `%AppData%/FileSurfer/settings.json` and `sftp-connections.json`. Defaults come
   from the platform's `IDefaultSettingsProvider`. `SettingsRecord` is the JSON shape.
