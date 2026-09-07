@@ -58,7 +58,7 @@ See the following section for detailed instructions.
 To build FileSurfer from source on Windows, you'll need the following:  
 
 #### **Prerequisites**  
-- [**.NET 8.0 SDK**](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
+- [**.NET 10.0 SDK**](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 - [**Git for Windows**](https://git-scm.com/install/windows): (optional, for Git integration)  
 
 #### **Steps**  
@@ -66,7 +66,7 @@ To build FileSurfer from source on Windows, you'll need the following:
    ```pwsh  
    dotnet publish <path to FileSurfer.Windows.csproj> -c Release  
    ```  
-2. Locate the compiled executable at: ` "...\src\FileSurfer.Windows\bin\Release\net8.0-windows\publish\FileSurfer.exe" `
+2. Locate the compiled executable at: ` "...\src\FileSurfer.Windows\bin\Release\net10.0-windows\publish\FileSurfer.exe" `
 
 *(You can also use Visual Studio 2022/2026 to build the project.)*  
 
@@ -76,7 +76,7 @@ To build FileSurfer from source on Windows, you'll need the following:
 To build FileSurfer from source on Windows, you'll need the following:  
 
 #### **Prerequisites**  
-- [**.NET 8.0 SDK**](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
+- [**.NET 10.0 SDK**](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 - [**Git for Linux**](https://git-scm.com/install/linux): (optional, for Git integration)  
 
 #### **To Run**:
@@ -89,7 +89,7 @@ To build FileSurfer from source on Windows, you'll need the following:
    ```bash  
    dotnet build  <path to FileSurfer.Linux.csproj> -c Release
    ```  
-2. Locate the compiled executable at: ` ".../src/FileSurfer.Linux/bin/Release/net8.0/FileSurfer" `
+2. Locate the compiled executable at: ` ".../src/FileSurfer.Linux/bin/Release/net10.0/FileSurfer" `
 
 ---
 
@@ -107,7 +107,7 @@ FileSurfer relies on the following dependencies:
 ### **Common**
 
 #### .NET and Frameworks
-- .NET 8.0  
+- .NET 10.0  
 - Avalonia UI  
 
 #### NuGet Packages
